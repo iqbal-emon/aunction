@@ -36,9 +36,12 @@ public class HomeController : ControllerBase
                     {
                         auctionSystem dto = new auctionSystem
                         {
+
                             Username = row["Username"].ToString(),
                             Password = row["Password"].ToString(),
                             Email = row["Email"].ToString(),
+                            UserID= row["UserID"].ToString(),
+
 
                         };
                         Lst.Add(dto);

@@ -13,7 +13,8 @@
         public IFormFile ImageURL { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-
-
+      public byte[]? ImageField { get; set; }
+      public string? ItemID1 {  get; set; }
+        public string? UserID1 { get; set;}
     }
 }
