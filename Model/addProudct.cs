@@ -16,5 +16,7 @@
       public byte[]? ImageField { get; set; }
       public string? ItemID1 {  get; set; }
         public string? UserID1 { get; set;}
+        public string? ItemID2 { get; set; }
+
     }
 }
