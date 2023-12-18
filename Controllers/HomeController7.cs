@@ -25,15 +25,18 @@ public class HomeController7 : ControllerBase
         using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
         {
             con.Open();
-
-            using (SqlCommand cmd = new SqlCommand("SELECT TOP 1 * FROM bids " +
-                                       "INNER JOIN Customers ON Customers.CustomerID = Bids.CustomerID " +
-                                       "WHERE bids.CustomerID = @CustomerID " +
-                                       "ORDER BY Bids.Amount DESC", con))
+            using (SqlCommand command = new SqlCommand(
+                      "WITH RankedBids AS (" +
+                      "    SELECT " +
+                      "        b.*," +
+                      "        RANK() OVER (PARTITION BY b.ItemID ORDER BY b.Amount DESC) AS BidRank " +
+                      "    FROM bids b" +
+                      ")" +
+                      "SELECT * FROM RankedBids WHERE BidRank = 1 AND CustomerID = @CustomerID", con))
             {
-                cmd.Parameters.AddWithValue("@CustomerID", CustomerID);
+                command.Parameters.AddWithValue("@CustomerID", CustomerID);
 
-                using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                using (SqlDataAdapter da = new SqlDataAdapter(command))
                 {
                     DataTable dt = new DataTable();
                     da.Fill(dt);
@@ -44,7 +47,9 @@ public class HomeController7 : ControllerBase
                         {
                             ItemID = Convert.ToInt32(row["ItemID"]),
                             CustomerID = Convert.ToString(row["CustomerID"]),
-                            Amount = Convert.ToString(row["Amount"])
+                            Amount = Convert.ToString(row["Amount"]),// Adjust the type accordingly
+                            BidTime = row["EndTime"] != DBNull.Value ? Convert.ToDateTime(row["BidTime"]) : DateTime.MinValue,
+
                         };
 
                         Lst.Add(dto);
