@@ -26,13 +26,15 @@ public class HomeController7 : ControllerBase
         {
             con.Open();
             using (SqlCommand command = new SqlCommand(
-                      "WITH RankedBids AS (" +
-                      "    SELECT " +
-                      "        b.*," +
-                      "        RANK() OVER (PARTITION BY b.ItemID ORDER BY b.Amount DESC) AS BidRank " +
-                      "    FROM bids b" +
-                      ")" +
-                      "SELECT * FROM RankedBids WHERE BidRank = 1 AND CustomerID = @CustomerID", con))
+                "WITH RankedBids AS (" +
+                "    SELECT " +
+                "        b.*," +
+                "        i.EndTime,i.Title," + // Include additional columns from the 'items' table
+                "        RANK() OVER (PARTITION BY b.ItemID ORDER BY b.Amount DESC) AS BidRank " +
+                "    FROM bids b" +
+                "    JOIN items i ON b.ItemID = i.ItemID" + // Join with the 'items' table
+                ")" +
+                "SELECT * FROM RankedBids WHERE BidRank = 1 AND CustomerID = @CustomerID", con))
             {
                 command.Parameters.AddWithValue("@CustomerID", CustomerID);
 
@@ -48,7 +50,10 @@ public class HomeController7 : ControllerBase
                             ItemID = Convert.ToInt32(row["ItemID"]),
                             CustomerID = Convert.ToString(row["CustomerID"]),
                             Amount = Convert.ToString(row["Amount"]),// Adjust the type accordingly
-                            BidTime = row["EndTime"] != DBNull.Value ? Convert.ToDateTime(row["BidTime"]) : DateTime.MinValue,
+                            BidTime = row["BidTime"] != DBNull.Value ? Convert.ToDateTime(row["BidTime"]) : DateTime.MinValue,
+                            EndTime = row["EndTime"] != DBNull.Value ? Convert.ToDateTime(row["EndTime"]) : DateTime.MinValue,
+                            Title = Convert.ToString(row["Title"]),
+
 
                         };
 
