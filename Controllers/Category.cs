@@ -78,4 +78,36 @@ public class Category : ControllerBase
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }
+    [HttpDelete]
+    [Route("deleteCategory/{id}")]
+    public IActionResult DeleteCategory(string id)
+    {
+        try
+        {
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                con.Open();
+
+                using (SqlCommand cmd = new SqlCommand("DELETE FROM Category WHERE CategoryID = @CategoryID", con))
+                {
+                    cmd.Parameters.AddWithValue("@CategoryID", id);
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+
+                    if (rowsAffected > 0)
+                    {
+                        return Ok("Category deleted successfully.");
+                    }
+                    else
+                    {
+                        return NotFound("Category not found or failed to delete.");
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
 }
