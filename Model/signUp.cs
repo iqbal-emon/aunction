@@ -9,6 +9,7 @@ namespace aunction.Model
         [EmailAddress(ErrorMessage = "Invalid Email Address")]
         public string Email { get; set; }
         public string? CustomerID { get; set; }
+        public string? flag { get; set; }
     }
 }
 

@@ -41,6 +41,8 @@ public class HomeController : ControllerBase
                             Password = row["Password"].ToString(),
                             Email = row["Email"].ToString(),
                             UserID= row["UserID"].ToString(),
+                            flag = row["flag"].ToString(),
+                            flag2 = row["flag2"].ToString()
 
 
                         };
