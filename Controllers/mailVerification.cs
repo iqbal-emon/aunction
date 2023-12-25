@@ -1,21 +1,17 @@
-﻿// Install the necessary NuGet packages: Microsoft.Extensions.DependencyInjection, System.Net.Mail, System.Net.Http.Json
+﻿// Other using statements...
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration; // Add this for configuration
-using System;
-using System.Net;
 using System.Net.Mail;
+using System.Net;
 
 [ApiController]
 [Route("api")]
 public class MailVerificationController : ControllerBase
 {
-    private readonly SmtpClient _smtpClient;
     private readonly IConfiguration _configuration;
 
-    public MailVerificationController(SmtpClient smtpClient, IConfiguration configuration)
+    public MailVerificationController(IConfiguration configuration)
     {
-        _smtpClient = smtpClient;
         _configuration = configuration;
     }
 
@@ -62,23 +58,26 @@ public class MailVerificationController : ControllerBase
 
     private void SendEmail(string toEmail, string verificationCode)
     {
-        var fromAddress = new MailAddress(_configuration["Smtp:FromEmail"], "Your Name");
-        var toAddress = new MailAddress(toEmail);
-
-        _smtpClient.Host = _configuration["Smtp:Host"];
-        _smtpClient.Port = int.Parse(_configuration["Smtp:Port"]);
-        _smtpClient.EnableSsl = true;
-        _smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
-        _smtpClient.UseDefaultCredentials = false;
-        _smtpClient.Credentials = new NetworkCredential(_configuration["Smtp:Username"], _configuration["Smtp:Password"]);
-
-        var message = new MailMessage(fromAddress, toAddress)
+        using (var smtpClient = new SmtpClient())
         {
-            Subject = "Email Verification",
-            Body = $"Your verification code is: {verificationCode}"
-        };
+            var fromAddress = new MailAddress(_configuration["Smtp:ihemon281@gmail.com"], "Your Name");
+            var toAddress = new MailAddress(toEmail);
 
-        _smtpClient.Send(message);
+            smtpClient.Host = _configuration["Smtp:smtp.elasticemail.com"];
+            smtpClient.Port = int.Parse(_configuration["Smtp:2525"]);
+            smtpClient.EnableSsl = true;
+            smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+            smtpClient.UseDefaultCredentials = false;
+            smtpClient.Credentials = new NetworkCredential(_configuration["Smtp:ihemon281@gmail.com"], _configuration["Smtp:784B7800431B361EFFC1DB9FC276F5B9F1F2"]);
+
+            var message = new MailMessage(fromAddress, toAddress)
+            {
+                Subject = "Email Verification",
+                Body = $"Your verification code is: {verificationCode}"
+            };
+
+            smtpClient.Send(message);
+        }
     }
 }
 
