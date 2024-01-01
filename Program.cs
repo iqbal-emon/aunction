@@ -25,6 +25,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(app.Environment.ContentRootPath, "Images")),
+    RequestPath = "/Images"
+});
 app.UseHttpsRedirection();
 app.UseRouting();
 

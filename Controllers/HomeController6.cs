@@ -54,7 +54,9 @@ public class HomeController6 : ControllerBase
                             StartTime = row["StartTime"] != DBNull.Value ? Convert.ToDateTime(row["StartTime"]) : DateTime.MinValue,
                             EndTime = row["EndTime"] != DBNull.Value ? Convert.ToDateTime(row["EndTime"]) : DateTime.MinValue,
                             ImageURL = null, // Assuming ImageURL is not fetched from the database
-                            ImageField = row["ImageURL"] != DBNull.Value ? ConvertToByteArray(row["ImageURL"]) : null,
+                            ImageField = row["ImageURL"] != DBNull.Value
+                                ? ConvertToByteArray(Convert.ToString(row["ImageURL"]))
+                                : null,
                             ItemID1 = Convert.ToString(row["ItemID"]),
                             UserID1 = Convert.ToString(row["UserID"]),
                             ItemID2 = Convert.ToString(row["ItemID"]),
@@ -75,14 +77,14 @@ public class HomeController6 : ControllerBase
         return Lst;
     }
 
-    private byte[] ConvertToByteArray(object value)
+    private byte[] ConvertToByteArray(string filePath)
     {
-        if (value is byte[] byteArray)
+        if (!string.IsNullOrEmpty(filePath) && System.IO.File.Exists(filePath))
         {
-            return byteArray;
+            return System.IO.File.ReadAllBytes(filePath);
         }
 
-        // Handle other conversions if necessary
+        // Handle other cases or return null if the file doesn't exist
         return null;
     }
 }
