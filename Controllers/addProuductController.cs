@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 [ApiController]
@@ -130,7 +131,74 @@ public class AddProudctController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, $"Error: {ex.Message}");
         }
     }
+    [HttpPut]
+    [Route("Home/ProductUpdate/{ItemID}")]
+    public async Task<IActionResult> UpdateProductAsync(int ItemID, [FromForm] addProudct product)
+    {
+        try
+        {
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                con.Open();
 
+                // Check if the product with the specified ItemID exists
+
+
+                // Save images to server and get file paths
+                var imageURL = await SaveImageToServer(product.ImageURL);
+                var imageURL1 = await SaveImageToServer(product.ImageURL1);
+                var imageURL2 = await SaveImageToServer(product.ImageURL2);
+
+
+                using (SqlCommand cmd = new SqlCommand("UPDATE Items SET Title = @Title, Description = @Description, Category = @Category, ReservePrice = @ReservePrice, StartTime = @StartTime, EndTime = @EndTime" +
+                    "{0} WHERE ItemID = @ItemID", con))
+                {
+                    cmd.Parameters.AddWithValue("@Title", product.Title);
+                    cmd.Parameters.AddWithValue("@Description", product.Description);
+                    cmd.Parameters.AddWithValue("@Category", product.Category);
+                    cmd.Parameters.AddWithValue("@ReservePrice", product.ReservePrice);
+                    cmd.Parameters.AddWithValue("@StartTime", product.StartTime);
+                    cmd.Parameters.AddWithValue("@EndTime", product.EndTime);
+                    cmd.Parameters.AddWithValue("@ItemID", ItemID);
+
+                    StringBuilder additionalConditions = new StringBuilder();
+
+                    if (product.ImageURL != null)
+                    {
+                        additionalConditions.Append(", ImageURL = @ImageURL");
+                        cmd.Parameters.AddWithValue("@ImageURL", imageURL);
+                    }
+                    if (product.ImageURL1 != null)
+                    {
+                        additionalConditions.Append(", ImageURL1 = @ImageURL1");
+                        cmd.Parameters.AddWithValue("@ImageURL1", imageURL1);
+                    }
+                    if (product.ImageURL2 != null)
+                    {
+                        additionalConditions.Append(", ImageURL2 = @ImageURL2");
+                        cmd.Parameters.AddWithValue("@ImageURL2", imageURL2);
+                    }
+
+                    cmd.CommandText = string.Format(cmd.CommandText, additionalConditions.ToString());
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    Console.WriteLine($"Rows Affected: {rowsAffected}");
+                }
+
+
+
+                con.Close();
+
+            }
+
+            return Ok($"Product with ItemID {ItemID} updated successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+            return StatusCode(StatusCodes.Status500InternalServerError, $"Error: {ex.Message}");
+        }
+    }
 
     // Helper method to save image to server and return file path
     private async Task<string> SaveImageToServer(IFormFile imageFile)

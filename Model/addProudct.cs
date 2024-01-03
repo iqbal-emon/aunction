@@ -10,9 +10,9 @@
         public string Description { get; set; }
         public string Category { get; set; }
         public decimal ReservePrice { get; set; }
-        public IFormFile ImageURL { get; set; }
-        public IFormFile ImageURL1 { get; set; }
-        public IFormFile ImageURL2 { get; set; }
+        public IFormFile? ImageURL { get; set; }
+        public IFormFile? ImageURL1 { get; set; }
+        public IFormFile? ImageURL2 { get; set; }
 
 
         public DateTime StartTime { get; set; }
