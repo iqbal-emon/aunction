@@ -11,6 +11,8 @@ namespace aunction.Model
         public string? CustomerID { get; set; }
         public string? flag { get; set; }
         public string? flag2 {get; set; }   
+      public byte[]? ImageField { get; set; }
+
     }
 }
 

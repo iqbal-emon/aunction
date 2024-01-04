@@ -16,6 +16,8 @@
 
   <ItemGroup>
     <Folder Include="Images\" />
+    <Folder Include="Images1\" />
+    <Folder Include="NewFolder\" />
   </ItemGroup>
 
 </Project>
