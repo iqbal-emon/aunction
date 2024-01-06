@@ -9,10 +9,12 @@ public class HomeController : ControllerBase
 {
     private readonly IConfiguration _configuration;
     private object ImageField;
+    private readonly IWebHostEnvironment _environment;
 
-    public HomeController(IConfiguration config)
+    public HomeController(IConfiguration config, IWebHostEnvironment environment)
     {
         _configuration = config;
+        _environment = environment;
     }
     [HttpGet]
     [Route("GetAllDetails")]
@@ -24,6 +26,7 @@ public class HomeController : ControllerBase
 
         {
             con.Open();
+
 
             using (SqlCommand cmd = new SqlCommand("SELECT * FROM Users", con))
             {
@@ -41,6 +44,11 @@ public class HomeController : ControllerBase
                             Password = row["Password"].ToString(),
                             Email = row["Email"].ToString(),
                             UserID= row["UserID"].ToString(),
+                            flag = row["flag"].ToString(),
+                            flag2 = row["flag2"].ToString(),
+                            ImageField = row["ImageURL"] != DBNull.Value
+                                ? ConvertToByteArray(Convert.ToString(row["ImageURL"]))
+                                : null
 
 
                         };
@@ -53,7 +61,16 @@ public class HomeController : ControllerBase
 
         return Lst;
     }
+    private byte[] ConvertToByteArray(string filePath)
+    {
+        if (!string.IsNullOrEmpty(filePath) && System.IO.File.Exists(filePath))
+        {
+            return System.IO.File.ReadAllBytes(filePath);
+        }
 
+        // Handle other cases or return null if the file doesn't exist
+        return null;
+    }
 
 
 
@@ -67,12 +84,14 @@ public class HomeController : ControllerBase
             using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {
                 con.Open();
+                var imageURL = await SaveImageToServer(blog.ImageURL);
 
-                using (SqlCommand cmd = new SqlCommand("INSERT INTO Users (Username, Password, Email) VALUES (@Username, @Password, @Email)", con))
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO Users (Username, Password, Email,ImageURL) VALUES (@Username, @Password, @Email,@ImageURL)", con))
                 {
                     cmd.Parameters.AddWithValue("@Username", blog.Username);
                     cmd.Parameters.AddWithValue("@Password", blog.Password);
                     cmd.Parameters.AddWithValue("@Email", blog.Email);
+                    cmd.Parameters.AddWithValue("@ImageURL", imageURL);
 
                     int rowsAffected = cmd.ExecuteNonQuery();
                     Console.WriteLine($"Rows Affected: {rowsAffected}");
@@ -87,6 +106,31 @@ public class HomeController : ControllerBase
         {
             Console.WriteLine($"Error: {ex.Message}");
             return StatusCode(StatusCodes.Status500InternalServerError, $"Error: {ex.Message}");
+        }
+    }
+    private async Task<string> SaveImageToServer(IFormFile imageFile)
+    {
+        if (imageFile != null && imageFile.Length > 0)
+        {
+            var uploadsFolderPath = Path.Combine(_environment.ContentRootPath, "Images", "Uploads");
+            if (!Directory.Exists(uploadsFolderPath))
+            {
+                Directory.CreateDirectory(uploadsFolderPath);
+            }
+
+            var imageName = $"{Guid.NewGuid()}{Path.GetExtension(imageFile.FileName)}";
+            var imagePath = Path.Combine(uploadsFolderPath, imageName);
+
+            using (var stream = System.IO.File.Create(imagePath))
+            {
+                await imageFile.CopyToAsync(stream);
+            }
+
+            return imagePath; // You can store this path in the database
+        }
+        else
+        {
+            return null;
         }
     }
 
